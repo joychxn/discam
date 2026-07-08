@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disposable 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 1. ADDED SUPABASE CLIENT CDN LIBRARY -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
         body {
@@ -83,6 +85,11 @@
 
     <!-- INTERACTIVE JAVASCRIPT LOGIC -->
     <script>
+        // 2. INITIALIZE SUPABASE CLIENT (Replace with your keys)
+        const SUPABASE_URL = "https://your-project-id.supabase.co";
+        const SUPABASE_ANON_KEY = "your-anon-public-key";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const mainActionBtn = document.getElementById('main-action-btn');
@@ -173,23 +180,33 @@
             statusTag.className = "px-2 py-0.5 bg-yellow-50 text-yellow-700 rounded-full text-[10px]";
         }
 
-        // Accept photo & save it locally
-        function commitPhotoToGallery() {
-            photosTaken++;
-            localStorage.setItem('party_photos_count', photosTaken);
-            
-            // Save image payload array locally for the mock up environment
-            const { data, error } = await supabase
-              .from('joydela_rager_photos')
-              .insert([
-                { image_url: capturedImageData } // Sends the snapped image directly to the cloud
-              ]);
+        // 3. FIXED: ADDED "async" TO PREVENT JAVASCRIPT SYSTEM CRASH
+        async function commitPhotoToGallery() {
+            try {
+                statusTag.innerText = "Saving...";
+                
+                // Save image payload array array to Supabase cloud database
+                const { data, error } = await supabase
+                  .from('joydela_rager_photos')
+                  .insert([
+                    { image_url: capturedImageData } 
+                  ]);
 
-            updateCounter();
-            resetViewfinderToLive();
+                if (error) throw error;
 
-            if (photosTaken >= maxPhotos) {
-                shutDownCamera();
+                photosTaken++;
+                localStorage.setItem('party_photos_count', photosTaken);
+
+                updateCounter();
+                resetViewfinderToLive();
+
+                if (photosTaken >= maxPhotos) {
+                    shutDownCamera();
+                }
+            } catch (err) {
+                console.error("Cloud Save Error:", err);
+                alert("Failed to save to cloud gallery. Check your Supabase credentials or internet.");
+                statusTag.innerText = "Error";
             }
         }
 
