@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disposable 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+            color: #111111;
+        }
+        .notion-border {
+            border: 1px solid #e3e3e3;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-6">
+
+    <!-- HEADER (Notion/Heytea minimalist style) -->
+    <header class="w-full max-w-md text-center py-8">
+        <div class="text-4xl mb-3">📸</div>
+        <h1 class="text-xl font-semibold tracking-tight">HBD // DISPOSABLE CAMERA</h1>
+        <p class="text-xs text-gray-400 mt-1 uppercase tracking-widest">July 2026 Edition</p>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="w-full max-w-md flex-1 flex flex-col justify-center items-center my-4">
+        
+        <!-- VIEWSCREEN / CAMERA CONTAINER -->
+        <div id="camera-container" class="w-full aspect-[3/4] bg-white notion-border rounded-xl overflow-hidden flex flex-col justify-between p-4 shadow-sm relative">
+            
+            <!-- Top Status Bar -->
+            <div class="flex justify-between items-center text-xs font-medium tracking-wide text-gray-500 uppercase">
+                <div id="remaining-count">Remaining: 10/10</div>
+                <div id="status-tag" class="px-2 py-0.5 bg-gray-100 rounded-full text-[10px]">Ready</div>
+            </div>
+
+            <!-- Viewfinder Display Window -->
+            <div class="w-full flex-1 my-4 bg-[#f4f4f4] rounded-lg overflow-hidden flex items-center justify-center relative notion-border">
+                <!-- Live Video Stream -->
+                <video id="video" class="w-full h-full object-cover hidden" autoplay playsinline></video>
+                <!-- Captured Snapshot Preview -->
+                <canvas id="canvas" class="w-full h-full object-cover hidden"></canvas>
+                
+                <!-- Splash / Empty State Intro Screen -->
+                <div id="camera-placeholder" class="text-center p-6">
+                    <p class="text-sm text-gray-500 font-light">Point, shoot, and capture the night. You get ten unfiltered exposures.</p>
+                </div>
+            </div>
+
+            <!-- Contextual Bottom Action Controls -->
+            <div class="w-full">
+                <!-- Action Row 1: The big primary action button -->
+                <button id="main-action-btn" class="w-full py-3.5 bg-black text-white rounded-lg font-medium text-sm tracking-wide uppercase hover:bg-zinc-900 transition-colors">
+                    Open Lens
+                </button>
+
+                <!-- Action Row 2: Secondary choices (Hidden by default until a photo is snapped) -->
+                <div id="decision-controls" class="hidden grid grid-cols-2 gap-3 mt-2">
+                    <button id="retake-btn" class="py-3 bg-white text-black notion-border rounded-lg font-medium text-sm tracking-wide uppercase hover:bg-gray-50 transition-colors">
+                        Retake
+                    </button>
+                    <button id="submit-btn" class="py-3 bg-black text-white rounded-lg font-medium text-sm tracking-wide uppercase hover:bg-zinc-900 transition-colors">
+                        Keep Photo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER LINK -->
+    <footer class="w-full max-w-md text-center pt-4 pb-2">
+        <button id="view-gallery-btn" class="text-xs font-medium text-gray-400 hover:text-black transition-colors uppercase tracking-wider underline underline-offset-4">
+            View Local Film Roll ↗
+        </button>
+    </footer>
+
+    <!-- INTERACTIVE JAVASCRIPT LOGIC -->
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const mainActionBtn = document.getElementById('main-action-btn');
+        const decisionControls = document.getElementById('decision-controls');
+        const retakeBtn = document.getElementById('retake-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const cameraPlaceholder = document.getElementById('camera-placeholder');
+        const remainingCountDisplay = document.getElementById('remaining-count');
+        const statusTag = document.getElementById('status-tag');
+
+        let maxPhotos = 10;
+        let photosTaken = parseInt(localStorage.getItem('party_photos_count')) || 0;
+        let stream = null;
+        let capturedImageData = null;
+
+        // Initialize display counter
+        updateCounter();
+
+        // Core Event Listeners
+        mainActionBtn.addEventListener('click', () => {
+            if (photosTaken >= maxPhotos) {
+                alert("You've used up your disposable roll! Wait for the gallery link at the end of the party.");
+                return;
+            }
+
+            if (!stream) {
+                initCamera();
+            } else {
+                snapPhoto();
+            }
+        });
+
+        retakeBtn.addEventListener('click', resetViewfinderToLive);
+        submitBtn.addEventListener('click', commitPhotoToGallery);
+
+        // Turn on user hardware camera
+        async function initCamera() {
+            try {
+                statusTag.innerText = "Connecting...";
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }, 
+                    audio: false 
+                });
+                video.srcObject = stream;
+                video.classList.remove('hidden');
+                cameraPlaceholder.classList.add('hidden');
+                
+                mainActionBtn.innerText = "Snap Photo";
+                statusTag.innerText = "Exposing";
+                statusTag.className = "px-2 py-0.5 bg-yellow-50 text-yellow-700 rounded-full text-[10px]";
+            } catch (err) {
+                console.error("Camera access error: ", err);
+                alert("Please enable camera permissions to use the disposable app.");
+                statusTag.innerText = "Error";
+            }
+        }
+
+        // Capture static frame from live stream
+        function snapPhoto() {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw current frame onto static canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            capturedImageData = canvas.toDataURL('image/jpeg');
+            
+            // Switch display visibility layers
+            video.classList.add('hidden');
+            canvas.classList.remove('hidden');
+            mainActionBtn.classList.add('hidden');
+            decisionControls.classList.remove('hidden');
+            
+            statusTag.innerText = "Reviewing";
+            statusTag.className = "px-2 py-0.5 bg-zinc-100 text-zinc-700 rounded-full text-[10px]";
+        }
+
+        // Discard frame and go back to live stream view
+        function resetViewfinderToLive() {
+            canvas.classList.add('hidden');
+            video.classList.remove('hidden');
+            decisionControls.classList.add('hidden');
+            mainActionBtn.classList.remove('hidden');
+            
+            capturedImageData = null;
+            statusTag.innerText = "Exposing";
+            statusTag.className = "px-2 py-0.5 bg-yellow-50 text-yellow-700 rounded-full text-[10px]";
+        }
+
+        // Accept photo & save it locally
+        function commitPhotoToGallery() {
+            photosTaken++;
+            localStorage.setItem('party_photos_count', photosTaken);
+            
+            // Save image payload array locally for the mock up environment
+            let gallery = JSON.parse(localStorage.getItem('party_gallery')) || [];
+            gallery.push(capturedImageData);
+            localStorage.setItem('party_gallery', JSON.stringify(gallery));
+
+            updateCounter();
+            resetViewfinderToLive();
+
+            if (photosTaken >= maxPhotos) {
+                shutDownCamera();
+            }
+        }
+
+        function updateCounter() {
+            remainingCountDisplay.innerText = `Remaining: ${maxPhotos - photosTaken}/${maxPhotos}`;
+        }
+
+        function shutDownCamera() {
+            if(stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            video.classList.add('hidden');
+            canvas.classList.add('hidden');
+            cameraPlaceholder.classList.remove('hidden');
+            mainActionBtn.classList.remove('hidden');
+            decisionControls.classList.add('hidden');
+            
+            mainActionBtn.innerText = "Roll Depleted";
+            mainActionBtn.disabled = true;
+            mainActionBtn.className = "w-full py-3.5 bg-gray-200 text-gray-400 rounded-lg font-medium text-sm tracking-wide uppercase cursor-not-allowed";
+            statusTag.innerText = "Empty";
+            statusTag.className = "px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px]";
+            cameraPlaceholder.innerHTML = `<p class="text-sm font-semibold text-black">All 10 slots filled!</p><p class="text-xs text-gray-400 mt-1">Thanks for capturing the memories.</p>`;
+        }
+    </script>
+</body>
+</html>
