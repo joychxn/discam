@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disposable 2026 // Film Roll</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9f9;
+            color: #111111;
+        }
+        .notion-border {
+            border: 1px solid #e3e3e3;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <!-- HEADER -->
+    <header class="w-full max-w-4xl text-center mb-8 pt-4">
+        <a href="index.html" class="text-xs font-medium text-gray-400 hover:text-black transition-colors uppercase tracking-wider underline underline-offset-4 mb-2 inline-block">
+            ← Back to Viewfinder
+        </a>
+        <h1 class="text-2xl font-semibold tracking-tight mt-2">THE DEVELOPS // FILM ROLL</h1>
+        <p class="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">Live Party Archive</p>
+    </header>
+
+    <!-- LOADING / EMPTY STATE -->
+    <div id="loading-state" class="text-sm text-gray-400 font-light my-12">
+        Developing negatives...
+    </div>
+
+    <!-- PHOTO GRID CONTAINER -->
+    <main id="gallery-grid" class="w-full max-w-4xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 hidden">
+        <!-- Live photos will inject here dynamically -->
+    </main>
+
+    <script>
+        // REPLACE THESE with your real Supabase project credentials
+        const SUPABASE_URL = "https://mtfxvdgfmgpoyhuzthak.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_7LZk5JbgymjLHkFfzhZdZw_j_vjl70C";
+        
+        const supabase = @supabase/supabaseJs.createClient(https://mtfxvdgfmgpoyhuzthak.supabase.co, sb_publishable_7LZk5JbgymjLHkFfzhZdZw_j_vjl70C);
+
+        const loadingState = document.getElementById('loading-state');
+        const galleryGrid = document.getElementById('gallery-grid');
+
+        async function fetchGallery() {
+            try {
+                // Pull photos from your Supabase table sorted by newest first
+                const { data, error } = await supabase
+                    .from('joydela_rager_photos')
+                    .select('image_payload, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    loadingState.innerText = "No exposures snapped yet. Get out there!";
+                    return;
+                }
+
+                // Loop through photos and generate HTML cards
+                galleryGrid.innerHTML = data.map(photo => `
+                    <div class="bg-white notion-border p-2 rounded-xl shadow-sm overflow-hidden flex flex-col">
+                        <div class="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100">
+                            <img src="${photo.image_payload}" class="w-full h-full object-cover" alt="Party moment">
+                        </div>
+                        <div class="text-[9px] text-zinc-400 uppercase tracking-wider mt-2 px-1 flex justify-between">
+                            <span>EXPOSURE</span>
+                            <span>${new Date(photo.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Toggle visibility layers
+                loadingState.classList.add('hidden');
+                galleryGrid.classList.remove('hidden');
+
+            } catch (err) {
+                console.error("Error fetching gallery data:", err);
+                loadingState.innerText = "Error loading developer fluids.";
+            }
+        }
+
+        // Initialize on load
+        fetchGallery();
+    </script>
+</body>
+</html>
