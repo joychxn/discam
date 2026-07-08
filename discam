@@ -76,7 +76,7 @@
 
     <!-- FOOTER LINK -->
     <footer class="w-full max-w-md text-center pt-4 pb-2">
-        <button id="view-gallery-btn" class="text-xs font-medium text-gray-400 hover:text-black transition-colors uppercase tracking-wider underline underline-offset-4">
+        <button id="view-gallery-btn" onclick="window.location.href='gallery.html'" class="text-xs font-medium text-gray-400 hover:text-black transition-colors uppercase tracking-wider underline underline-offset-4">
             View Local Film Roll ↗
         </button>
     </footer>
