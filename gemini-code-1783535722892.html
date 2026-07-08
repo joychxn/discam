@@ -179,9 +179,11 @@
             localStorage.setItem('party_photos_count', photosTaken);
             
             // Save image payload array locally for the mock up environment
-            let gallery = JSON.parse(localStorage.getItem('party_gallery')) || [];
-            gallery.push(capturedImageData);
-            localStorage.setItem('party_gallery', JSON.stringify(gallery));
+            const { data, error } = await supabase
+              .from('joydela_rager_photos')
+              .insert([
+                { image_url: capturedImageData } // Sends the snapped image directly to the cloud
+              ]);
 
             updateCounter();
             resetViewfinderToLive();
