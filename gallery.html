@@ -44,8 +44,10 @@
         // REPLACE THESE with your real Supabase project credentials
         const SUPABASE_URL = "https://mtfxvdgfmgpoyhuzthak.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10Znh2ZGdmbWdwb3lodXp0aGFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NDM2NDAsImV4cCI6MjA5OTExOTY0MH0.yMhCRqx3z6wIxm4YTpa6HoIB2eT8GUJ0ZDPcsEmqjEc";
-        
-        const supabaseClient = await supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        async function createClient() {
+            const supabaseClient = await supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+        createClient();
 
         const loadingState = document.getElementById('loading-state');
         const galleryGrid = document.getElementById('gallery-grid');
