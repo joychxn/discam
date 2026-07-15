@@ -55,7 +55,7 @@
         async function fetchGallery() {
             try {
                 // Pull photos from your Supabase table sorted by newest first
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('party_photos')
                     .select('image_payload, created_at')
                     .order('created_at', { ascending: false });
