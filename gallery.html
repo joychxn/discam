@@ -57,7 +57,7 @@
                 console.log("This is my supabaseClient: ",supabaseClient);
                 // Pull photos from your Supabase table sorted by newest first
                 const { data, error } = await supabaseClient
-                    .from('public.joydela_rager_photos')
+                    .from('joydela_rager_photos')
                     .select('image_url, created_at')
                     .order('created_at', { ascending: false });
 
