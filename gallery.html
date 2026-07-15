@@ -41,19 +41,19 @@
     </main>
 
     <script>
-        // REPLACE THESE with your real Supabase project credentials
+        let supabaseClient;
         const SUPABASE_URL = "https://mtfxvdgfmgpoyhuzthak.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10Znh2ZGdmbWdwb3lodXp0aGFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM1NDM2NDAsImV4cCI6MjA5OTExOTY0MH0.yMhCRqx3z6wIxm4YTpa6HoIB2eT8GUJ0ZDPcsEmqjEc";
         async function createClient() {
             return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
-        const supabaseClient = await createClient();
-
         const loadingState = document.getElementById('loading-state');
         const galleryGrid = document.getElementById('gallery-grid');
 
         async function fetchGallery() {
             try {
+                const resolvedSupabase = await supabase; 
+                supabaseClient = resolvedSupabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log("This is my supabaseClient: ",supabaseClient);
                 // Pull photos from your Supabase table sorted by newest first
                 const { data, error } = await supabaseClient
